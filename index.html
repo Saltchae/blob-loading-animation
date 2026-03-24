@@ -381,10 +381,10 @@
       }
     }
 
-    // ============ #5: 3D Spiral Card Tower ============
+    // ============ #5: Isometric Card Stack ============
     const ctx5 = document.getElementById('canvas5').getContext('2d');
     const C5 = 360;
-    const STACK_COUNT = 10;
+    const CARD_NUM = 6;
 
     function drawRoundRect(ctx, x, y, w, h, r) {
       ctx.beginPath();
@@ -400,87 +400,71 @@
       ctx.closePath();
     }
 
-    // Gradient color for each card based on position
-    function cardGradient(ctx, i, total, cardW, cardH) {
-      const ratio = i / total;
-      // Orange-red at top → blue-purple at bottom
-      const r = Math.round(230 - ratio * 100);
-      const g = Math.round(100 + ratio * 40 - Math.abs(ratio - 0.5) * 80);
-      const b = Math.round(60 + ratio * 180);
-      const grad = ctx.createLinearGradient(-cardW/2, 0, cardW/2, 0);
-      grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.9)`);
-      grad.addColorStop(1, `rgba(${Math.min(255, r+40)}, ${Math.min(255, g+30)}, ${Math.min(255, b-20)}, 0.85)`);
-      return grad;
-    }
+    // Rich gradients for each card (inspired by reference)
+    const cardGradients = [
+      { c1: '#FF6B35', c2: '#FFB347' },  // orange
+      { c1: '#00C9A7', c2: '#00D4FF' },  // cyan-teal
+      { c1: '#E85D75', c2: '#5B86E5' },  // coral-blue
+      { c1: '#C79081', c2: '#DFA579' },  // warm beige
+      { c1: '#7B5EA7', c2: '#F7971E' },  // purple-orange
+      { c1: '#FFA3C4', c2: '#C4A3FF' },  // pink-lavender
+    ];
 
     function anim5(t) {
       ctx5.clearRect(0, 0, C5, C5);
-      const cx = C5 / 2;
-      // Credit card ratio 85.6 x 53.98 ≈ 1.586:1
-      const cardW = 110, cardH = 70, radius = 8;
-      const baseY = 320;
-      const spacing = 28;
-      const cardThickness = 3;
 
-      // All cards rotate together as a rigid stack, each offset by fixed angle
-      const globalRotation = t * 0.8;
-      const twistPerCard = 0.22;
+      // Isometric perspective: cards are parallelograms
+      const cardW = 140, cardVisH = 38; // visible face height in isometric
+      const skewX = -0.45; // isometric horizontal skew
+      const radius = 6;
+      const cx = C5 / 2 + 10;
 
-      for (let i = 0; i < STACK_COUNT; i++) {
+      // Cards spread apart then come together
+      const cycle = t * 0.6;
+      const spread = (Math.sin(cycle) + 1) / 2; // 0 = stacked, 1 = spread
+
+      const stackedSpacing = 8;
+      const spreadSpacing = 48;
+
+      for (let i = 0; i < CARD_NUM; i++) {
+        const spacing = stackedSpacing + (spreadSpacing - stackedSpacing) * spread;
+        const totalH = (CARD_NUM - 1) * spacing;
+        const baseY = C5 / 2 + totalH / 2;
         const y = baseY - i * spacing;
-        const angle = globalRotation + i * twistPerCard;
 
-        const cosA = Math.cos(angle);
-        const sinA = Math.sin(angle);
-
-        // Rigid Y-axis rotation: card width = full width * |cos|
-        // When cos=0, card is edge-on (shows only thickness)
-        const facingRatio = Math.abs(cosA);
-        const visibleW = cardW * facingRatio;
+        // Slight horizontal offset per card for depth
+        const xOff = i * skewX * 12;
 
         ctx5.save();
-        ctx5.translate(cx, y);
+        ctx5.translate(cx + xOff, y);
+
+        // Isometric transform: skew to create 3D look
+        ctx5.transform(1, 0, skewX, 1, 0, 0);
 
         // Shadow
-        ctx5.shadowColor = `rgba(0, 0, 0, ${0.03 + (1 - i/STACK_COUNT) * 0.05})`;
-        ctx5.shadowBlur = 8;
-        ctx5.shadowOffsetX = sinA * 5;
-        ctx5.shadowOffsetY = 3;
+        ctx5.shadowColor = `rgba(0, 0, 0, ${0.15 + spread * 0.1})`;
+        ctx5.shadowBlur = 12 + spread * 8;
+        ctx5.shadowOffsetX = 4;
+        ctx5.shadowOffsetY = 6;
 
-        if (facingRatio < 0.05) {
-          // Edge-on: only show card thickness as a line
-          ctx5.fillStyle = cardGradient(ctx5, i, STACK_COUNT, cardW, cardH);
-          ctx5.fillRect(-1, -cardH, 2, cardH);
-        } else {
-          // Card edge (thickness visible on the leading side)
-          if (cardThickness * facingRatio > 0.3) {
-            const darker = i / STACK_COUNT;
-            const er = Math.round(170 - darker * 70);
-            const eg = Math.round(75 + darker * 20);
-            const eb = Math.round(50 + darker * 130);
-            ctx5.fillStyle = `rgb(${er}, ${eg}, ${eb})`;
-            // Edge is on the side the card is rotating toward
-            const edgeSide = sinA > 0 ? 1 : -1;
-            ctx5.fillRect(
-              edgeSide > 0 ? visibleW/2 : -visibleW/2 - cardThickness,
-              -cardH, cardThickness, cardH
-            );
-          }
+        // Card face with gradient
+        drawRoundRect(ctx5, -cardW/2, -cardVisH, cardW, cardVisH, radius);
+        const grad = ctx5.createLinearGradient(-cardW/2, 0, cardW/2, -cardVisH);
+        grad.addColorStop(0, cardGradients[i].c1);
+        grad.addColorStop(1, cardGradients[i].c2);
+        ctx5.fillStyle = grad;
+        ctx5.fill();
 
-          // Card face — rigid rectangle, no distortion
-          ctx5.shadowColor = 'transparent';
-          drawRoundRect(ctx5, -visibleW/2, -cardH, visibleW, cardH, radius * facingRatio);
-          ctx5.fillStyle = cardGradient(ctx5, i, STACK_COUNT, visibleW, cardH);
-          ctx5.fill();
+        // Subtle border
+        ctx5.shadowColor = 'transparent';
+        ctx5.strokeStyle = 'rgba(255,255,255,0.12)';
+        ctx5.lineWidth = 0.8;
+        drawRoundRect(ctx5, -cardW/2, -cardVisH, cardW, cardVisH, radius);
+        ctx5.stroke();
 
-          // Top highlight
-          ctx5.strokeStyle = `rgba(255, 255, 255, ${0.06 + facingRatio * 0.1})`;
-          ctx5.lineWidth = 0.5;
-          ctx5.beginPath();
-          ctx5.moveTo(-visibleW/2 + radius * facingRatio, -cardH);
-          ctx5.lineTo(visibleW/2 - radius * facingRatio, -cardH);
-          ctx5.stroke();
-        }
+        // Bottom edge (card thickness)
+        ctx5.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx5.fillRect(-cardW/2, 0, cardW, 3);
 
         ctx5.restore();
       }
