@@ -145,27 +145,54 @@
       const cx = 180, cy = 180;
       const a = 120;
 
-      // Faint infinity outline
-      for (let p = 0; p < 90; p++) {
-        const param = (p / 90) * Math.PI * 2;
+      // Faint infinity outline — thin line
+      ctx1.beginPath();
+      for (let p = 0; p <= 200; p++) {
+        const param = (p / 200) * Math.PI * 2;
         const pt = lemniscate(param, a);
-        const gx = Math.round((cx + pt.x) / GRID) * GRID;
-        const gy = Math.round((cy + pt.y) / GRID) * GRID;
-        ctx1.fillStyle = 'rgba(255,255,255,0.06)';
-        ctx1.fillRect(gx - GRID/2, gy - GRID/2, GRID - 1, GRID - 1);
+        if (p === 0) ctx1.moveTo(cx + pt.x, cy + pt.y);
+        else ctx1.lineTo(cx + pt.x, cy + pt.y);
+      }
+      ctx1.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx1.lineWidth = 2;
+      ctx1.stroke();
+
+      // Glowing trail line
+      const TRAIL_PTS = 40;
+      for (let seg = 0; seg < TRAIL_PTS - 1; seg++) {
+        const param1 = t * 1.8 - seg * 0.06;
+        const param2 = t * 1.8 - (seg + 1) * 0.06;
+        const pt1 = lemniscate(param1, a);
+        const pt2 = lemniscate(param2, a);
+        const alpha = 1 - (seg / TRAIL_PTS);
+
+        // Outer glow
+        ctx1.beginPath();
+        ctx1.moveTo(cx + pt1.x, cy + pt1.y);
+        ctx1.lineTo(cx + pt2.x, cy + pt2.y);
+        ctx1.strokeStyle = `rgba(255,255,255,${alpha * 0.15})`;
+        ctx1.lineWidth = 12;
+        ctx1.lineCap = 'round';
+        ctx1.stroke();
+
+        // Inner bright core
+        ctx1.beginPath();
+        ctx1.moveTo(cx + pt1.x, cy + pt1.y);
+        ctx1.lineTo(cx + pt2.x, cy + pt2.y);
+        ctx1.strokeStyle = `rgba(255,255,255,${alpha * 0.9})`;
+        ctx1.lineWidth = 3;
+        ctx1.lineCap = 'round';
+        ctx1.stroke();
       }
 
-      // Single trail
-      for (let trail = 0; trail < TRAIL_LEN; trail++) {
-        const param = t * 1.8 - trail * 0.1;
-        const pt = lemniscate(param, a);
-        const gx = Math.round((cx + pt.x) / GRID) * GRID;
-        const gy = Math.round((cy + pt.y) / GRID) * GRID;
-        const alpha = 1 - (trail / TRAIL_LEN);
-        const brightness = Math.round(255 * alpha);
-        ctx1.fillStyle = `rgb(${brightness},${brightness},${brightness})`;
-        ctx1.fillRect(gx - GRID/2, gy - GRID/2, GRID - 1, GRID - 1);
-      }
+      // Head glow dot
+      const headPt = lemniscate(t * 1.8, a);
+      const grd = ctx1.createRadialGradient(cx + headPt.x, cy + headPt.y, 0, cx + headPt.x, cy + headPt.y, 12);
+      grd.addColorStop(0, 'rgba(255,255,255,0.8)');
+      grd.addColorStop(0.4, 'rgba(255,255,255,0.2)');
+      grd.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx1.fillStyle = grd;
+      ctx1.fillRect(cx + headPt.x - 12, cy + headPt.y - 12, 24, 24);
     }
 
     // ============ #2: HUD Display (White/Gray, lateral motion) ============
@@ -384,7 +411,7 @@
     // ============ #5: Isometric Card Stack ============
     const ctx5 = document.getElementById('canvas5').getContext('2d');
     const C5 = 360;
-    const CARD_NUM = 6;
+    const CARD_NUM = 5;
 
     function drawRoundRect(ctx, x, y, w, h, r) {
       ctx.beginPath();
@@ -400,14 +427,13 @@
       ctx.closePath();
     }
 
-    // Rich gradients for each card (inspired by reference)
+    // Monochrome: bottom card (i=0) darkest, top card (i=4) brightest
     const cardGradients = [
-      { c1: '#FF6B35', c2: '#FFB347' },  // orange
-      { c1: '#00C9A7', c2: '#00D4FF' },  // cyan-teal
-      { c1: '#E85D75', c2: '#5B86E5' },  // coral-blue
-      { c1: '#C79081', c2: '#DFA579' },  // warm beige
-      { c1: '#7B5EA7', c2: '#F7971E' },  // purple-orange
-      { c1: '#FFA3C4', c2: '#C4A3FF' },  // pink-lavender
+      { c1: 'rgba(60,60,60,0.4)',    c2: 'rgba(40,40,40,0.25)' },
+      { c1: 'rgba(100,100,100,0.5)', c2: 'rgba(70,70,70,0.35)' },
+      { c1: 'rgba(150,150,150,0.65)',c2: 'rgba(110,110,110,0.45)' },
+      { c1: 'rgba(210,210,210,0.8)', c2: 'rgba(170,170,170,0.6)' },
+      { c1: 'rgba(255,255,255,0.95)',c2: 'rgba(220,220,220,0.8)' },
     ];
 
     // Elastic easing
@@ -419,54 +445,60 @@
     function anim5(t) {
       ctx5.clearRect(0, 0, C5, C5);
 
-      const cardW = 150, cardH = 95, radius = 8;
+      // Card dimensions (credit card ratio ~1.586:1)
+      const cardW = 135, cardH = 101, radius = 10;
       const cx = C5 / 2;
 
-      const cycle = t * 2.0;
+      // Vertical spread animation
+      const cycle = t * 1.8;
       const spread = (Math.sin(cycle) + 1) / 2;
 
-      const stackedSpacing = 30;
-      const spreadSpacing = 50;
+      // In transformed space, vertical spacing between cards
+      const stackedSpacing = 22;
+      const spreadSpacing = 42;
 
+      // Draw bottom cards first (back), top cards last (front = brightest)
       for (let i = 0; i < CARD_NUM; i++) {
         const spacing = stackedSpacing + (spreadSpacing - stackedSpacing) * spread;
         const totalH = (CARD_NUM - 1) * spacing;
-        const baseY = C5 / 2 + totalH / 2;
+        const baseY = C5 / 2 + totalH / 2 + 10;
         const y = baseY - i * spacing;
 
         ctx5.save();
-        ctx5.translate(cx, y);
+        ctx5.translate(cx + 15, y);
 
-        // 3D perspective: rotate card around X-axis (tilt forward)
-        // scaleY compresses height, skewX adds horizontal perspective
+        // Isometric perspective matching reference:
+        // Wide parallelogram, left edge higher, compressed vertically
         ctx5.transform(
-          1,      // scaleX
-          -0.15,  // skewY — slight vertical tilt
-          -0.4,   // skewX — horizontal perspective
-          0.55,   // scaleY — foreshorten height
+          1,      // scaleX — full width
+          0.18,   // skewY — right edge drops down
+          -0.55,  // skewX — creates parallelogram lean
+          0.35,   // scaleY — heavy vertical compression
           0, 0
         );
 
-        // Shadow
-        ctx5.shadowColor = `rgba(0, 0, 0, ${0.25 + spread * 0.15})`;
-        ctx5.shadowBlur = 12 + spread * 8;
-        ctx5.shadowOffsetX = 8;
-        ctx5.shadowOffsetY = 8;
+        // Glow beneath card — brighter for top cards
+        ctx5.shadowColor = `rgba(255, 255, 255, ${0.05 + i * 0.04})`;
+        ctx5.shadowBlur = 15;
+        ctx5.shadowOffsetX = 0;
+        ctx5.shadowOffsetY = 0;
 
-        // Card face
+        // Card face with monochrome gradient
         drawRoundRect(ctx5, -cardW/2, -cardH/2, cardW, cardH, radius);
-        const grad = ctx5.createLinearGradient(-cardW/2, -cardH/2, cardW/2, cardH/2);
+        const grad = ctx5.createLinearGradient(-cardW/2, 0, cardW/2, 0);
         grad.addColorStop(0, cardGradients[i].c1);
         grad.addColorStop(1, cardGradients[i].c2);
         ctx5.fillStyle = grad;
         ctx5.fill();
 
-        // Border
-        ctx5.shadowColor = 'transparent';
-        ctx5.strokeStyle = 'rgba(255,255,255,0.1)';
-        ctx5.lineWidth = 0.6;
+        // White glow outline — brighter on top cards
+        ctx5.shadowColor = `rgba(255,255,255,${0.1 + i * 0.08})`;
+        ctx5.shadowBlur = 8;
         drawRoundRect(ctx5, -cardW/2, -cardH/2, cardW, cardH, radius);
+        ctx5.strokeStyle = `rgba(255,255,255,${0.15 + i * 0.1})`;
+        ctx5.lineWidth = 1.5;
         ctx5.stroke();
+        ctx5.shadowColor = 'transparent';
 
         ctx5.restore();
       }
@@ -558,12 +590,27 @@
           ctx6.fill();
         } else if (b.type === 'tri') {
           ctx6.fillStyle = bauColors[b.color];
+          // Triangle lands on circle, then slides and tilts permanently
+          const dropEnd = i * bauStagger + bauDropTime;
+          let tiltAngle = 0;
+          let slideX = 0;
+          if (cycle > dropEnd) {
+            // Tilt builds up and STAYS — never resets
+            const settleT = Math.min(1, (cycle - dropEnd) / 0.6);
+            const ease = 1 - Math.pow(1 - settleT, 3);
+            tiltAngle = ease * 0.35; // ~20 degrees permanent tilt
+            slideX = ease * 12;      // slide right permanently
+          }
+          ctx6.save();
+          ctx6.translate(drawX + slideX, drawY);
+          ctx6.rotate(tiltAngle);
           ctx6.beginPath();
-          ctx6.moveTo(drawX, drawY - b.s);
-          ctx6.lineTo(drawX - b.s * 0.9, drawY + b.s * 0.5);
-          ctx6.lineTo(drawX + b.s * 0.9, drawY + b.s * 0.5);
+          ctx6.moveTo(0, -b.s);
+          ctx6.lineTo(-b.s * 0.9, b.s * 0.5);
+          ctx6.lineTo(b.s * 0.9, b.s * 0.5);
           ctx6.closePath();
           ctx6.fill();
+          ctx6.restore();
         }
 
         ctx6.restore();
