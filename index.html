@@ -424,8 +424,7 @@
 
       // Faster cycle with elastic curve
       const cycle = t * 1.2;
-      const raw = (Math.sin(cycle) + 1) / 2; // 0..1
-      const spread = elasticOut(raw); // elastic feel
+      const spread = (Math.sin(cycle) + 1) / 2; // smooth sine curve
 
       const stackedSpacing = 6;
       const spreadSpacing = 50;
