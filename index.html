@@ -420,60 +420,67 @@
       const cardW = 110, cardH = 70, radius = 8;
       const baseY = 320;
       const spacing = 28;
+      const cardThickness = 3;
 
-      // Continuous spiral rotation
-      const twistSpeed = 0.8;
+      // All cards rotate together as a rigid stack, each offset by fixed angle
+      const globalRotation = t * 0.8;
       const twistPerCard = 0.22;
 
       for (let i = 0; i < STACK_COUNT; i++) {
         const y = baseY - i * spacing;
-        const twist = i * twistPerCard + t * twistSpeed;
+        const angle = globalRotation + i * twistPerCard;
 
-        const cosAngle = Math.cos(twist);
-        const sinAngle = Math.sin(twist);
+        const cosA = Math.cos(angle);
+        const sinA = Math.sin(angle);
 
-        // Y-axis rotation: width scales with cos, offset with sin
-        const perspW = cardW * Math.abs(cosAngle) * 0.85 + cardW * 0.15;
-        const offsetX = sinAngle * cardW * 0.4;
+        // Rigid Y-axis rotation: card width = full width * |cos|
+        // When cos=0, card is edge-on (shows only thickness)
+        const facingRatio = Math.abs(cosA);
+        const visibleW = cardW * facingRatio;
 
         ctx5.save();
-        ctx5.translate(cx + offsetX, y);
-        // No skew — pure flat card rotating around vertical axis
+        ctx5.translate(cx, y);
 
-        // Shadow shifts with rotation
-        ctx5.shadowColor = `rgba(0, 0, 0, ${0.04 + (1 - i/STACK_COUNT) * 0.06})`;
-        ctx5.shadowBlur = 10;
-        ctx5.shadowOffsetX = sinAngle * 6;
-        ctx5.shadowOffsetY = 4;
+        // Shadow
+        ctx5.shadowColor = `rgba(0, 0, 0, ${0.03 + (1 - i/STACK_COUNT) * 0.05})`;
+        ctx5.shadowBlur = 8;
+        ctx5.shadowOffsetX = sinA * 5;
+        ctx5.shadowOffsetY = 3;
 
-        // Card edge (side thickness when rotated)
-        const edgeThickness = Math.abs(sinAngle) * 5;
-        if (edgeThickness > 0.5) {
-          const darker = i / STACK_COUNT;
-          const er = Math.round(170 - darker * 70);
-          const eg = Math.round(75 + darker * 20);
-          const eb = Math.round(50 + darker * 130);
-          ctx5.fillStyle = `rgb(${er}, ${eg}, ${eb})`;
-          const edgeDir = sinAngle > 0 ? 1 : -1;
-          ctx5.fillRect(
-            edgeDir > 0 ? perspW/2 : -perspW/2 - edgeThickness,
-            -cardH, edgeThickness, cardH
-          );
+        if (facingRatio < 0.05) {
+          // Edge-on: only show card thickness as a line
+          ctx5.fillStyle = cardGradient(ctx5, i, STACK_COUNT, cardW, cardH);
+          ctx5.fillRect(-1, -cardH, 2, cardH);
+        } else {
+          // Card edge (thickness visible on the leading side)
+          if (cardThickness * facingRatio > 0.3) {
+            const darker = i / STACK_COUNT;
+            const er = Math.round(170 - darker * 70);
+            const eg = Math.round(75 + darker * 20);
+            const eb = Math.round(50 + darker * 130);
+            ctx5.fillStyle = `rgb(${er}, ${eg}, ${eb})`;
+            // Edge is on the side the card is rotating toward
+            const edgeSide = sinA > 0 ? 1 : -1;
+            ctx5.fillRect(
+              edgeSide > 0 ? visibleW/2 : -visibleW/2 - cardThickness,
+              -cardH, cardThickness, cardH
+            );
+          }
+
+          // Card face — rigid rectangle, no distortion
+          ctx5.shadowColor = 'transparent';
+          drawRoundRect(ctx5, -visibleW/2, -cardH, visibleW, cardH, radius * facingRatio);
+          ctx5.fillStyle = cardGradient(ctx5, i, STACK_COUNT, visibleW, cardH);
+          ctx5.fill();
+
+          // Top highlight
+          ctx5.strokeStyle = `rgba(255, 255, 255, ${0.06 + facingRatio * 0.1})`;
+          ctx5.lineWidth = 0.5;
+          ctx5.beginPath();
+          ctx5.moveTo(-visibleW/2 + radius * facingRatio, -cardH);
+          ctx5.lineTo(visibleW/2 - radius * facingRatio, -cardH);
+          ctx5.stroke();
         }
-
-        // Card face
-        ctx5.shadowColor = 'transparent';
-        drawRoundRect(ctx5, -perspW/2, -cardH, perspW, cardH, radius);
-        ctx5.fillStyle = cardGradient(ctx5, i, STACK_COUNT, perspW, cardH);
-        ctx5.fill();
-
-        // Highlight
-        ctx5.strokeStyle = `rgba(255, 255, 255, ${0.08 + Math.abs(cosAngle) * 0.12})`;
-        ctx5.lineWidth = 0.5;
-        ctx5.beginPath();
-        ctx5.moveTo(-perspW/2 + radius, -cardH);
-        ctx5.lineTo(perspW/2 - radius, -cardH);
-        ctx5.stroke();
 
         ctx5.restore();
       }
@@ -494,19 +501,24 @@
       '#43A047', // green
     ];
 
-    // 5 shapes: rect base, circle (yellow), rect (orange, vertical beside circle), triangle, small rect
+    // 5 shapes stacked without overlap (bottom to top, physics-correct)
+    // Base rect: y=280, h=28 → top at 280
+    // Circle: r=24, sits ON base → center at 280-24=256
+    // Orange rect: h=48, sits beside circle on base → y=280-48=232, x offset right
+    // Triangle: s=24, sits ON circle → bottom at 256-24=232, center ~220
+    // Black cap: h=16, sits ON triangle → y=220-24-16=196 (top of triangle tip ~196)
     const bauShapes = [
-      { type: 'rect',   color: 1, cx: 180, ty: 280, w: 100, h: 28 },       // blue base
-      { type: 'circle', color: 2, cx: 160, ty: 230, r: 26 },               // yellow circle
-      { type: 'rect',   color: 5, cx: 200, ty: 252, w: 20,  h: 52 },       // orange vertical beside circle
-      { type: 'tri',    color: 0, cx: 180, ty: 180, s: 28 },               // red triangle on top
-      { type: 'rect',   color: 3, cx: 180, ty: 145, w: 50,  h: 18 },       // black cap
+      { type: 'rect',   color: 1, cx: 180, ty: 270, w: 130, h: 35 },       // blue base
+      { type: 'circle', color: 2, cx: 160, ty: 236, r: 34 },               // yellow circle on base
+      { type: 'rect',   color: 5, cx: 215, ty: 206, w: 26,  h: 64 },       // orange vertical beside circle
+      { type: 'tri',    color: 0, cx: 160, ty: 185, s: 30 },               // red triangle on circle
+      { type: 'rect',   color: 3, cx: 160, ty: 145, w: 56,  h: 18 },       // black cap on top
     ];
 
     const BAU_COUNT = bauShapes.length;
-    const bauCycle = 5.5;
-    const bauDropTime = 0.5;
-    const bauStagger = 0.55;
+    const bauCycle = 4.5;
+    const bauDropTime = 0.35;
+    const bauStagger = 0.4;
 
     function easeOutCubic(x) {
       return 1 - Math.pow(1 - x, 3);
