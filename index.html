@@ -423,11 +423,11 @@
       const cx = C5 / 2;
 
       // Faster cycle with elastic curve
-      const cycle = t * 1.2;
-      const spread = (Math.sin(cycle) + 1) / 2; // smooth sine curve
+      const cycle = t * 2.0;
+      const spread = (Math.sin(cycle) + 1) / 2;
 
       const stackedSpacing = 20;
-      const spreadSpacing = 50;
+      const spreadSpacing = 35;
 
       for (let i = 0; i < CARD_NUM; i++) {
         const spacing = stackedSpacing + (spreadSpacing - stackedSpacing) * spread;
