@@ -384,7 +384,7 @@
     // ============ #5: 3D Spiral Card Tower ============
     const ctx5 = document.getElementById('canvas5').getContext('2d');
     const C5 = 360;
-    const STACK_COUNT = 22;
+    const STACK_COUNT = 10;
 
     function drawRoundRect(ctx, x, y, w, h, r) {
       ctx.beginPath();
@@ -416,52 +416,49 @@
     function anim5(t) {
       ctx5.clearRect(0, 0, C5, C5);
       const cx = C5 / 2;
-      const cardW = 100, cardH = 12, radius = 4;
-      const baseY = 330;
-      const spacing = 13;
+      // Credit card ratio 85.6 x 53.98 ≈ 1.586:1
+      const cardW = 110, cardH = 70, radius = 8;
+      const baseY = 320;
+      const spacing = 28;
 
-      // Slow continuous spiral rotation
-      const twistSpeed = 0.4;
-      const twistPerCard = 0.14; // radians between each card
+      // Continuous spiral rotation
+      const twistSpeed = 0.8;
+      const twistPerCard = 0.22;
 
       for (let i = 0; i < STACK_COUNT; i++) {
         const y = baseY - i * spacing;
-        // Each card has base twist + animated rotation
         const twist = i * twistPerCard + t * twistSpeed;
 
-        // 3D perspective: compute card width based on rotation angle
         const cosAngle = Math.cos(twist);
         const sinAngle = Math.sin(twist);
-        const perspW = cardW * Math.abs(cosAngle) * 0.9 + cardW * 0.1;
 
-        // Horizontal offset from twist (creates spiral silhouette)
-        const offsetX = sinAngle * cardW * 0.35;
-
-        // Fake 3D: skew based on rotation
-        const skewFactor = sinAngle * 0.15;
-
-        // Edge thickness visible when card is angled
-        const edgeVisible = Math.abs(sinAngle) > 0.3;
+        // Y-axis rotation: width scales with cos, offset with sin
+        const perspW = cardW * Math.abs(cosAngle) * 0.85 + cardW * 0.15;
+        const offsetX = sinAngle * cardW * 0.4;
 
         ctx5.save();
         ctx5.translate(cx + offsetX, y);
-        ctx5.transform(1, skewFactor, 0, 1, 0, 0);
+        // No skew — pure flat card rotating around vertical axis
 
-        // Shadow (deeper for lower cards)
-        ctx5.shadowColor = `rgba(0, 0, 0, ${0.06 + (1 - i/STACK_COUNT) * 0.08})`;
-        ctx5.shadowBlur = 8;
-        ctx5.shadowOffsetY = 3;
+        // Shadow shifts with rotation
+        ctx5.shadowColor = `rgba(0, 0, 0, ${0.04 + (1 - i/STACK_COUNT) * 0.06})`;
+        ctx5.shadowBlur = 10;
+        ctx5.shadowOffsetX = sinAngle * 6;
+        ctx5.shadowOffsetY = 4;
 
-        // Card edge (visible thickness)
-        if (edgeVisible) {
-          const edgeH = 4;
+        // Card edge (side thickness when rotated)
+        const edgeThickness = Math.abs(sinAngle) * 5;
+        if (edgeThickness > 0.5) {
           const darker = i / STACK_COUNT;
-          const er = Math.round(180 - darker * 80);
-          const eg = Math.round(80 + darker * 20);
-          const eb = Math.round(40 + darker * 140);
+          const er = Math.round(170 - darker * 70);
+          const eg = Math.round(75 + darker * 20);
+          const eb = Math.round(50 + darker * 130);
           ctx5.fillStyle = `rgb(${er}, ${eg}, ${eb})`;
-          drawRoundRect(ctx5, -perspW/2, 0, perspW, edgeH, 2);
-          ctx5.fill();
+          const edgeDir = sinAngle > 0 ? 1 : -1;
+          ctx5.fillRect(
+            edgeDir > 0 ? perspW/2 : -perspW/2 - edgeThickness,
+            -cardH, edgeThickness, cardH
+          );
         }
 
         // Card face
@@ -470,8 +467,8 @@
         ctx5.fillStyle = cardGradient(ctx5, i, STACK_COUNT, perspW, cardH);
         ctx5.fill();
 
-        // Subtle highlight on top edge
-        ctx5.strokeStyle = `rgba(255, 255, 255, ${0.1 + Math.abs(cosAngle) * 0.15})`;
+        // Highlight
+        ctx5.strokeStyle = `rgba(255, 255, 255, ${0.08 + Math.abs(cosAngle) * 0.12})`;
         ctx5.lineWidth = 0.5;
         ctx5.beginPath();
         ctx5.moveTo(-perspW/2 + radius, -cardH);
@@ -497,74 +494,56 @@
       '#43A047', // green
     ];
 
-    // Block definitions: shape, color, target position, size
-    const blocks = [
-      { type: 'rect',   color: 0, tx: 90,  ty: 260, w: 120, h: 35 },
-      { type: 'rect',   color: 3, tx: 130, ty: 222, w: 80,  h: 35 },
-      { type: 'rect',   color: 1, tx: 100, ty: 184, w: 100, h: 35 },
-      { type: 'circle', color: 2, tx: 180, ty: 148, r: 28 },
-      { type: 'rect',   color: 5, tx: 110, ty: 110, w: 60,  h: 30 },
-      { type: 'tri',    color: 0, tx: 160, ty: 70,  s: 40 },
-      { type: 'rect',   color: 4, tx: 140, ty: 40,  w: 45,  h: 25 },
+    // 5 shapes: rect base, circle (yellow), rect (orange, vertical beside circle), triangle, small rect
+    const bauShapes = [
+      { type: 'rect',   color: 1, cx: 180, ty: 280, w: 100, h: 28 },       // blue base
+      { type: 'circle', color: 2, cx: 160, ty: 230, r: 26 },               // yellow circle
+      { type: 'rect',   color: 5, cx: 200, ty: 252, w: 20,  h: 52 },       // orange vertical beside circle
+      { type: 'tri',    color: 0, cx: 180, ty: 180, s: 28 },               // red triangle on top
+      { type: 'rect',   color: 3, cx: 180, ty: 145, w: 50,  h: 18 },       // black cap
     ];
 
-    const BLOCK_COUNT = blocks.length;
-    const stackCycle = 4.5; // full cycle duration
-    const dropDuration = 0.35;
-    const staggerDelay = 0.4;
-    const holdTime = 1.0;
+    const BAU_COUNT = bauShapes.length;
+    const bauCycle = 5.5;
+    const bauDropTime = 0.5;
+    const bauStagger = 0.55;
 
-    function easeOutBounceLight(x) {
-      if (x < 0.7) {
-        return (1 / 0.49) * x * x;
-      } else if (x < 0.9) {
-        const t = x - 0.8;
-        return 1 - 0.15 * (1 - (t / 0.1) * (t / 0.1));
-      }
-      return 1;
+    function easeOutCubic(x) {
+      return 1 - Math.pow(1 - x, 3);
     }
 
     function anim6(t) {
       ctx6.clearRect(0, 0, B6, B6);
+      const cycle = t % bauCycle;
 
-      const cycle = t % stackCycle;
-      const totalDropTime = (BLOCK_COUNT - 1) * staggerDelay + dropDuration;
-      const collapseStart = totalDropTime + holdTime;
+      const totalDrop = (BAU_COUNT - 1) * bauStagger + bauDropTime;
+      const collapseStart = totalDrop + 0.8;
 
-      for (let i = 0; i < BLOCK_COUNT; i++) {
-        const b = blocks[i];
-        const dropStart = i * staggerDelay;
+      for (let i = 0; i < BAU_COUNT; i++) {
+        const b = bauShapes[i];
+        const dropStart = i * bauStagger;
 
-        let x = b.tx, y, opacity = 1, scaleX = 1, scaleY = 1;
+        let drawX = b.cx, drawY = b.ty, opacity = 1;
 
         if (cycle < dropStart) {
-          // Not yet appeared
           continue;
-        } else if (cycle < dropStart + dropDuration) {
-          // Dropping in from top
-          const p = (cycle - dropStart) / dropDuration;
-          const ease = easeOutBounceLight(p);
-          y = -40 + (b.ty + 40) * ease;
-          opacity = Math.min(1, p * 3);
-          // Slight squash on landing
-          if (p > 0.65) {
-            const squash = (p - 0.65) / 0.35;
-            scaleY = 1 - Math.sin(squash * Math.PI) * 0.12;
-            scaleX = 1 + Math.sin(squash * Math.PI) * 0.08;
-          }
+        } else if (cycle < dropStart + bauDropTime) {
+          // Smooth drop from above
+          const p = (cycle - dropStart) / bauDropTime;
+          const ease = easeOutCubic(p);
+          drawY = -40 + (b.ty + 40) * ease;
+          opacity = Math.min(1, p * 2.5);
         } else if (cycle < collapseStart) {
-          // Settled
-          y = b.ty;
-          // Tiny idle wobble
-          y += Math.sin(t * 2 + i * 1.3) * 0.8;
-        } else if (cycle < collapseStart + 0.6) {
-          // Collapse: slide out in different directions
-          const p = (cycle - collapseStart) / 0.6;
-          const ease = p * p;
-          y = b.ty;
-          const dir = (i % 2 === 0) ? -1 : 1;
-          x = b.tx + dir * ease * 400;
-          opacity = 1 - ease;
+          // Settled — gentle breathing
+          drawY = b.ty + Math.sin(t * 1.5 + i * 1.2) * 0.5;
+        } else if (cycle < collapseStart + 1.8) {
+          // Soft dissolve downward — each piece sinks and fades
+          const p = (cycle - collapseStart) / 1.8;
+          const delay = i * 0.08; // top pieces fall first (reversed feel)
+          const dp = Math.max(0, Math.min(1, (p - delay) / (1 - delay * BAU_COUNT * 0.5)));
+          const ease = dp * dp; // ease in — accelerates
+          drawY = b.ty + ease * 60;
+          opacity = 1 - dp;
         } else {
           continue;
         }
@@ -573,25 +552,19 @@
         ctx6.globalAlpha = opacity;
 
         if (b.type === 'rect') {
-          ctx6.translate(x + b.w / 2, y + b.h / 2);
-          ctx6.scale(scaleX, scaleY);
           ctx6.fillStyle = bauColors[b.color];
-          ctx6.fillRect(-b.w / 2, -b.h / 2, b.w, b.h);
+          ctx6.fillRect(drawX - b.w / 2, drawY, b.w, b.h);
         } else if (b.type === 'circle') {
-          ctx6.translate(x, y);
-          ctx6.scale(scaleX, scaleY);
           ctx6.fillStyle = bauColors[b.color];
           ctx6.beginPath();
-          ctx6.arc(0, 0, b.r, 0, Math.PI * 2);
+          ctx6.arc(drawX, drawY, b.r, 0, Math.PI * 2);
           ctx6.fill();
         } else if (b.type === 'tri') {
-          ctx6.translate(x, y);
-          ctx6.scale(scaleX, scaleY);
           ctx6.fillStyle = bauColors[b.color];
           ctx6.beginPath();
-          ctx6.moveTo(0, -b.s);
-          ctx6.lineTo(-b.s * 0.9, b.s * 0.5);
-          ctx6.lineTo(b.s * 0.9, b.s * 0.5);
+          ctx6.moveTo(drawX, drawY - b.s);
+          ctx6.lineTo(drawX - b.s * 0.9, drawY + b.s * 0.5);
+          ctx6.lineTo(drawX + b.s * 0.9, drawY + b.s * 0.5);
           ctx6.closePath();
           ctx6.fill();
         }
@@ -599,19 +572,16 @@
         ctx6.restore();
       }
 
-      // Decorative thin lines (Kandinsky style) — appear after stack is built
-      const linesStart = totalDropTime + 0.2;
+      // Decorative Kandinsky lines
+      const linesStart = totalDrop + 0.15;
       if (cycle > linesStart && cycle < collapseStart) {
-        const lAlpha = Math.min(0.3, (cycle - linesStart) * 0.5);
+        const lAlpha = Math.min(0.2, (cycle - linesStart) * 0.3);
         ctx6.strokeStyle = `rgba(33, 33, 33, ${lAlpha})`;
         ctx6.lineWidth = 1;
-        // Diagonal line
-        ctx6.beginPath(); ctx6.moveTo(60, 290); ctx6.lineTo(280, 30); ctx6.stroke();
-        // Horizontal line
-        ctx6.beginPath(); ctx6.moveTo(50, 180); ctx6.lineTo(310, 180); ctx6.stroke();
-        // Small circle accent
-        ctx6.strokeStyle = `rgba(229, 57, 53, ${lAlpha})`;
-        ctx6.beginPath(); ctx6.arc(260, 240, 15, 0, Math.PI * 2); ctx6.stroke();
+        ctx6.beginPath(); ctx6.moveTo(100, 300); ctx6.lineTo(260, 130); ctx6.stroke();
+        ctx6.beginPath(); ctx6.moveTo(90, 220); ctx6.lineTo(270, 220); ctx6.stroke();
+        ctx6.strokeStyle = `rgba(229, 57, 53, ${lAlpha * 0.8})`;
+        ctx6.beginPath(); ctx6.arc(250, 270, 12, 0, Math.PI * 2); ctx6.stroke();
       }
     }
 
