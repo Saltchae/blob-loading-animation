@@ -3,125 +3,629 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blob Loading Animation</title>
+  <title>Loading Animation Samples</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
       min-height: 100vh;
-      background: #1a1a2e;
+      background: #000000;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       overflow: hidden;
     }
 
-    .container {
+    .panel {
       display: flex;
       flex-direction: column;
+      justify-content: center;
       align-items: center;
-      gap: 40px;
-    }
-
-    .loader-wrapper {
       position: relative;
-      width: 200px;
-      height: 200px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    svg.metaball-svg {
-      width: 200px;
-      height: 200px;
+    .panel-label {
+      position: absolute;
+      top: 16px;
+      left: 20px;
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    svg.anim-svg {
+      width: 180px;
+      height: 180px;
       overflow: visible;
     }
 
-    .label {
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 14px;
-      letter-spacing: 4px;
-      text-transform: uppercase;
+    canvas.anim-canvas {
+      width: 180px;
+      height: 180px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="loader-wrapper">
-      <svg class="metaball-svg" viewBox="0 0 200 200">
-        <defs>
-          <filter id="goo">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
-            <feColorMatrix in="blur" mode="matrix"
-              values="1 0 0 0 0
-                      0 1 0 0 0
-                      0 0 1 0 0
-                      0 0 0 25 -10" result="goo" />
-            <feComposite in="SourceGraphic" in2="goo" operator="atop" />
-          </filter>
-        </defs>
-        <g filter="url(#goo)">
-          <circle id="blob0" cx="100" cy="100" r="18" fill="#4FC3F7" />
-          <circle id="blob1" cx="100" cy="100" r="18" fill="#F06292" />
-          <circle id="blob2" cx="100" cy="100" r="18" fill="#FFD54F" />
-          <circle id="blob3" cx="100" cy="100" r="18" fill="#81C784" />
-        </g>
-      </svg>
-    </div>
-    <span class="label">Loading</span>
+
+  <!-- #1: Pixel Infinity Loop -->
+  <div class="panel">
+    <span class="panel-label">#1 Pixel Infinity</span>
+    <canvas class="anim-canvas" id="canvas1" width="360" height="360"></canvas>
+  </div>
+
+  <!-- #2: HUD Display -->
+  <div class="panel">
+    <span class="panel-label">#2 HUD Display</span>
+    <canvas class="anim-canvas" id="canvas2" width="360" height="360"></canvas>
+  </div>
+
+  <!-- #3: Breathing Cluster — blobs expand from center and contract back -->
+  <div class="panel">
+    <span class="panel-label">#3 Breathing Cluster</span>
+    <svg class="anim-svg" id="svg3" viewBox="0 0 200 200">
+      <defs>
+        <filter id="gooblur3" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="blur" />
+          <feColorMatrix in="blur" mode="matrix"
+            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo" />
+          <feGaussianBlur in="goo" stdDeviation="4" />
+        </filter>
+      </defs>
+      <g filter="url(#gooblur3)">
+        <circle id="b3_0" cx="100" cy="100" r="32" fill="#FF5722" opacity="0.95" />
+        <circle id="b3_1" cx="100" cy="100" r="28" fill="#FF9100" opacity="0.9" />
+        <circle id="b3_2" cx="100" cy="100" r="30" fill="#00E5FF" opacity="0.9" />
+        <circle id="b3_3" cx="100" cy="100" r="26" fill="#FF5722" opacity="0.85" />
+        <circle id="b3_4" cx="100" cy="100" r="28" fill="#2979FF" opacity="0.9" />
+        <circle id="b3_5" cx="100" cy="100" r="34" fill="#00E5FF" opacity="0.85" />
+      </g>
+    </svg>
+  </div>
+
+  <!-- #4: DNA Helix — two strands of blobs spiraling -->
+  <div class="panel">
+    <span class="panel-label">#4 DNA Helix</span>
+    <svg class="anim-svg" id="svg4" viewBox="0 0 200 200">
+      <defs>
+        <filter id="goo4">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
+          <feColorMatrix in="blur" mode="matrix"
+            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -8" result="goo" />
+          <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+        </filter>
+      </defs>
+      <g filter="url(#goo4)">
+        <circle id="b4_a0" cx="100" cy="100" r="10" fill="#00E5FF" />
+        <circle id="b4_a1" cx="100" cy="100" r="10" fill="#00E5FF" />
+        <circle id="b4_a2" cx="100" cy="100" r="10" fill="#00E5FF" />
+        <circle id="b4_a3" cx="100" cy="100" r="10" fill="#00E5FF" />
+        <circle id="b4_a4" cx="100" cy="100" r="10" fill="#00E5FF" />
+        <circle id="b4_b0" cx="100" cy="100" r="10" fill="#FF4081" />
+        <circle id="b4_b1" cx="100" cy="100" r="10" fill="#FF4081" />
+        <circle id="b4_b2" cx="100" cy="100" r="10" fill="#FF4081" />
+        <circle id="b4_b3" cx="100" cy="100" r="10" fill="#FF4081" />
+        <circle id="b4_b4" cx="100" cy="100" r="10" fill="#FF4081" />
+      </g>
+    </svg>
+  </div>
+
+  <!-- #5: 3D Card Stack -->
+  <div class="panel">
+    <span class="panel-label">#5 Card Stack</span>
+    <canvas class="anim-canvas" id="canvas5" width="360" height="360"></canvas>
+  </div>
+
+  <!-- #6: Bauhaus Blocks -->
+  <div class="panel">
+    <span class="panel-label">#6 Bauhaus Blocks</span>
+    <canvas class="anim-canvas" id="canvas6" width="360" height="360"></canvas>
   </div>
 
   <script>
-    const blobs = [
-      document.getElementById('blob0'),
-      document.getElementById('blob1'),
-      document.getElementById('blob2'),
-      document.getElementById('blob3'),
-    ];
-
-    const center = { x: 100, y: 100 };
-    const numBlobs = blobs.length;
-
-    // Each blob has its own orbit parameters for organic motion
-    const blobConfigs = blobs.map((_, i) => ({
-      baseAngle: (Math.PI * 2 * i) / numBlobs,
-      orbitRadius: 38,
-      // Slight speed variation for organic feel
-      speedMultiplier: 1 + (i % 2 === 0 ? 0.05 : -0.05),
-      // Secondary wobble
-      wobbleAmp: 8 + i * 2,
-      wobbleSpeed: 1.5 + i * 0.3,
-    }));
-
-    const baseSpeed = 0.8;
     let startTime = null;
 
+    // ============ #1: Pixel Infinity Loop ============
+    const ctx1 = document.getElementById('canvas1').getContext('2d');
+    const GRID = 10;
+
+    function lemniscate(param, a) {
+      const s = Math.sin(param);
+      const c = Math.cos(param);
+      const d = 1 + s * s;
+      return { x: a * c / d, y: a * s * c / d };
+    }
+
+    const TRAIL_LEN = 20;
+
+    function anim1(t) {
+      ctx1.clearRect(0, 0, 360, 360);
+      const cx = 180, cy = 180;
+      const a = 120;
+
+      // Faint infinity outline
+      for (let p = 0; p < 90; p++) {
+        const param = (p / 90) * Math.PI * 2;
+        const pt = lemniscate(param, a);
+        const gx = Math.round((cx + pt.x) / GRID) * GRID;
+        const gy = Math.round((cy + pt.y) / GRID) * GRID;
+        ctx1.fillStyle = 'rgba(255,255,255,0.06)';
+        ctx1.fillRect(gx - GRID/2, gy - GRID/2, GRID - 1, GRID - 1);
+      }
+
+      // Single trail
+      for (let trail = 0; trail < TRAIL_LEN; trail++) {
+        const param = t * 1.8 - trail * 0.1;
+        const pt = lemniscate(param, a);
+        const gx = Math.round((cx + pt.x) / GRID) * GRID;
+        const gy = Math.round((cy + pt.y) / GRID) * GRID;
+        const alpha = 1 - (trail / TRAIL_LEN);
+        const brightness = Math.round(255 * alpha);
+        ctx1.fillStyle = `rgb(${brightness},${brightness},${brightness})`;
+        ctx1.fillRect(gx - GRID/2, gy - GRID/2, GRID - 1, GRID - 1);
+      }
+    }
+
+    // ============ #2: HUD Display (White/Gray, lateral motion) ============
+    const ctx2 = document.getElementById('canvas2').getContext('2d');
+    const HUD_W = 360, HUD_H = 360;
+    let hudNumbers = [];
+    let hudLines = [];
+    let hudPanels = [];
+    let lastHudUpdate = 0;
+
+    function initHudElements() {
+      hudNumbers = [];
+      for (let i = 0; i < 8; i++) {
+        hudNumbers.push({
+          x: 20 + Math.random() * 320,
+          y: 30 + Math.random() * 300,
+          val: Math.random().toFixed(Math.floor(Math.random() * 4 + 1)),
+          alpha: Math.random() * 0.6,
+          size: 8 + Math.floor(Math.random() * 5),
+          baseX: 20 + Math.random() * 320,
+          driftSpeed: 0.3 + Math.random() * 0.8,
+          driftAmp: 15 + Math.random() * 40,
+          phase: Math.random() * Math.PI * 2,
+        });
+      }
+      hudLines = [];
+      for (let i = 0; i < 4; i++) {
+        hudLines.push({
+          y: 30 + Math.random() * 300,
+          baseX: -20 + Math.random() * 100,
+          len: 60 + Math.random() * 200,
+          alpha: 0.15 + Math.random() * 0.3,
+          driftSpeed: 0.2 + Math.random() * 0.6,
+          driftAmp: 20 + Math.random() * 50,
+          phase: Math.random() * Math.PI * 2,
+          thickness: Math.random() > 0.6 ? 2 : 1,
+        });
+      }
+      hudPanels = [];
+      for (let i = 0; i < 3; i++) {
+        hudPanels.push({
+          baseX: 20 + Math.random() * 180,
+          y: 30 + Math.random() * 220,
+          w: 70 + Math.random() * 120,
+          h: 30 + Math.random() * 60,
+          alpha: 0.04 + Math.random() * 0.07,
+          driftSpeed: 0.15 + Math.random() * 0.5,
+          driftAmp: 25 + Math.random() * 60,
+          phase: Math.random() * Math.PI * 2,
+        });
+      }
+      // One large square panel
+      hudPanels.push({
+        baseX: 60,
+        y: 60,
+        w: 180,
+        h: 180,
+        alpha: 0.05,
+        driftSpeed: 0.25,
+        driftAmp: 35,
+        phase: 1.0,
+      });
+    }
+    initHudElements();
+
+    function anim2(t) {
+      ctx2.clearRect(0, 0, HUD_W, HUD_H);
+
+      // Refresh numbers periodically
+      if (t - lastHudUpdate > 0.2) {
+        lastHudUpdate = t;
+        for (let i = 0; i < 3; i++) {
+          const idx = Math.floor(Math.random() * hudNumbers.length);
+          hudNumbers[idx].val = Math.random().toFixed(Math.floor(Math.random() * 4 + 1));
+          hudNumbers[idx].alpha = 0.3 + Math.random() * 0.5;
+        }
+      }
+
+      // Solid translucent panels drifting left-right
+      hudPanels.forEach(p => {
+        const dx = Math.sin(t * p.driftSpeed + p.phase) * p.driftAmp;
+        ctx2.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
+        ctx2.fillRect(p.baseX + dx, p.y, p.w, p.h);
+        ctx2.strokeStyle = `rgba(255, 255, 255, ${p.alpha * 2})`;
+        ctx2.lineWidth = 0.5;
+        ctx2.strokeRect(p.baseX + dx, p.y, p.w, p.h);
+      });
+
+      // Corner brackets swaying
+      const cx = HUD_W / 2, cy = HUD_H / 2;
+      const frameSize = 120;
+      const cornerLen = 22;
+      const sway = Math.sin(t * 0.5) * 8;
+
+      ctx2.save();
+      ctx2.translate(sway, 0);
+      ctx2.strokeStyle = `rgba(255, 255, 255, ${0.35 + Math.sin(t * 1.5) * 0.15})`;
+      ctx2.lineWidth = 1.5;
+      ctx2.beginPath(); ctx2.moveTo(cx - frameSize, cy - frameSize + cornerLen); ctx2.lineTo(cx - frameSize, cy - frameSize); ctx2.lineTo(cx - frameSize + cornerLen, cy - frameSize); ctx2.stroke();
+      ctx2.beginPath(); ctx2.moveTo(cx + frameSize - cornerLen, cy - frameSize); ctx2.lineTo(cx + frameSize, cy - frameSize); ctx2.lineTo(cx + frameSize, cy - frameSize + cornerLen); ctx2.stroke();
+      ctx2.beginPath(); ctx2.moveTo(cx + frameSize, cy + frameSize - cornerLen); ctx2.lineTo(cx + frameSize, cy + frameSize); ctx2.lineTo(cx + frameSize - cornerLen, cy + frameSize); ctx2.stroke();
+      ctx2.beginPath(); ctx2.moveTo(cx - frameSize + cornerLen, cy + frameSize); ctx2.lineTo(cx - frameSize, cy + frameSize); ctx2.lineTo(cx - frameSize, cy + frameSize - cornerLen); ctx2.stroke();
+      ctx2.restore();
+
+      // Inner frame drifting opposite
+      const innerSize = 60;
+      const sway2 = Math.sin(t * 0.7 + 1) * 12;
+      ctx2.strokeStyle = `rgba(255, 255, 255, ${0.12 + Math.sin(t * 2) * 0.06})`;
+      ctx2.lineWidth = 1;
+      ctx2.strokeRect(cx - innerSize + sway2, cy - innerSize, innerSize * 2, innerSize * 2);
+
+      // Horizontal scanning line sweeping left to right
+      const scanX = ((t * 60) % (HUD_W + 40)) - 20;
+      ctx2.fillStyle = 'rgba(255, 255, 255, 0.03)';
+      ctx2.fillRect(scanX - 20, 0, 40, HUD_H);
+      ctx2.fillStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx2.fillRect(scanX - 1, 0, 2, HUD_H);
+
+      // Horizontal lines drifting laterally
+      hudLines.forEach(l => {
+        const dx = Math.sin(t * l.driftSpeed + l.phase) * l.driftAmp;
+        l.alpha *= (1 - 0.003);
+        if (l.alpha < 0.02) l.alpha = 0.15 + Math.random() * 0.2;
+        const gray = 180 + Math.floor(Math.random() * 75);
+        ctx2.strokeStyle = `rgba(${gray}, ${gray}, ${gray}, ${l.alpha})`;
+        ctx2.lineWidth = l.thickness;
+        ctx2.beginPath();
+        ctx2.moveTo(l.baseX + dx, l.y);
+        ctx2.lineTo(l.baseX + dx + l.len, l.y);
+        ctx2.stroke();
+      });
+
+      // Numbers drifting laterally
+      hudNumbers.forEach(n => {
+        const dx = Math.sin(t * n.driftSpeed + n.phase) * n.driftAmp;
+        n.alpha *= (1 - 0.005);
+        if (n.alpha < 0.03) n.alpha = 0;
+        const gray = 150 + Math.floor(Math.random() * 105);
+        ctx2.fillStyle = `rgba(${gray}, ${gray}, ${gray}, ${n.alpha})`;
+        ctx2.font = `600 ${n.size}px "Courier New", monospace`;
+        ctx2.fillText(n.val, n.baseX + dx, n.y);
+      });
+
+      // Center crosshair
+      const crossAlpha = 0.25 + Math.sin(t * 3) * 0.15;
+      ctx2.strokeStyle = `rgba(255, 255, 255, ${crossAlpha})`;
+      ctx2.lineWidth = 1;
+      ctx2.beginPath(); ctx2.moveTo(cx - 10, cy); ctx2.lineTo(cx + 10, cy); ctx2.stroke();
+      ctx2.beginPath(); ctx2.moveTo(cx, cy - 10); ctx2.lineTo(cx, cy + 10); ctx2.stroke();
+
+      // Dot grid
+      for (let gx = 25; gx < HUD_W; gx += 36) {
+        for (let gy = 25; gy < HUD_H; gy += 36) {
+          const flicker = Math.sin(t * 4 + gx * 0.08 + gy * 0.08) > 0.75 ? 0.12 : 0.02;
+          ctx2.fillStyle = `rgba(255, 255, 255, ${flicker})`;
+          ctx2.fillRect(gx, gy, 1.5, 1.5);
+        }
+      }
+    }
+
+    // ============ #3: Breathing Cluster ============
+    const blobs3 = [0,1,2,3,4,5].map(i => document.getElementById(`b3_${i}`));
+
+    function anim3(t) {
+      const n = blobs3.length;
+      blobs3.forEach((b, i) => {
+        const baseAng = (Math.PI * 2 * i) / n;
+        // Breathing: expand and contract (original speed)
+        const breath = (Math.sin(t * 1.2) + 1) / 2;
+        const radius = 8 + breath * 50;
+        // Each blob also rotates slowly
+        const ang = baseAng + t * 0.6 + Math.sin(t * 0.9 + i) * 0.3;
+        const x = 100 + Math.cos(ang) * radius;
+        const y = 100 + Math.sin(ang) * radius;
+        const r = 30 + Math.sin(t * 0.3 + i * 0.9) * 6;
+        b.setAttribute('cx', x);
+        b.setAttribute('cy', y);
+        b.setAttribute('r', r);
+      });
+    }
+
+    // ============ #4: DNA Helix ============
+    const helixA = [0,1,2,3,4].map(i => document.getElementById(`b4_a${i}`));
+    const helixB = [0,1,2,3,4].map(i => document.getElementById(`b4_b${i}`));
+
+    function anim4(t) {
+      const count = 5;
+      const spacing = 28;
+      const ampX = 35;
+      const speed = 4.0;
+
+      for (let i = 0; i < count; i++) {
+        const yPos = 100 + (i - 2) * spacing;
+        const wave = t * speed + i * 0.9;
+
+        // Strand A
+        const xA = 100 + Math.sin(wave) * ampX;
+        const depthA = (Math.cos(wave) + 1) / 2; // 0..1, for z-depth
+        const rA = 7 + depthA * 7;
+        helixA[i].setAttribute('cx', xA);
+        helixA[i].setAttribute('cy', yPos);
+        helixA[i].setAttribute('r', rA);
+        helixA[i].setAttribute('opacity', 0.5 + depthA * 0.5);
+
+        // Strand B (opposite phase)
+        const xB = 100 + Math.sin(wave + Math.PI) * ampX;
+        const depthB = (Math.cos(wave + Math.PI) + 1) / 2;
+        const rB = 7 + depthB * 7;
+        helixB[i].setAttribute('cx', xB);
+        helixB[i].setAttribute('cy', yPos);
+        helixB[i].setAttribute('r', rB);
+        helixB[i].setAttribute('opacity', 0.5 + depthB * 0.5);
+      }
+    }
+
+    // ============ #5: 3D Spiral Card Tower ============
+    const ctx5 = document.getElementById('canvas5').getContext('2d');
+    const C5 = 360;
+    const STACK_COUNT = 22;
+
+    function drawRoundRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+
+    // Gradient color for each card based on position
+    function cardGradient(ctx, i, total, cardW, cardH) {
+      const ratio = i / total;
+      // Orange-red at top → blue-purple at bottom
+      const r = Math.round(230 - ratio * 100);
+      const g = Math.round(100 + ratio * 40 - Math.abs(ratio - 0.5) * 80);
+      const b = Math.round(60 + ratio * 180);
+      const grad = ctx.createLinearGradient(-cardW/2, 0, cardW/2, 0);
+      grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.9)`);
+      grad.addColorStop(1, `rgba(${Math.min(255, r+40)}, ${Math.min(255, g+30)}, ${Math.min(255, b-20)}, 0.85)`);
+      return grad;
+    }
+
+    function anim5(t) {
+      ctx5.clearRect(0, 0, C5, C5);
+      const cx = C5 / 2;
+      const cardW = 100, cardH = 12, radius = 4;
+      const baseY = 330;
+      const spacing = 13;
+
+      // Slow continuous spiral rotation
+      const twistSpeed = 0.4;
+      const twistPerCard = 0.14; // radians between each card
+
+      for (let i = 0; i < STACK_COUNT; i++) {
+        const y = baseY - i * spacing;
+        // Each card has base twist + animated rotation
+        const twist = i * twistPerCard + t * twistSpeed;
+
+        // 3D perspective: compute card width based on rotation angle
+        const cosAngle = Math.cos(twist);
+        const sinAngle = Math.sin(twist);
+        const perspW = cardW * Math.abs(cosAngle) * 0.9 + cardW * 0.1;
+
+        // Horizontal offset from twist (creates spiral silhouette)
+        const offsetX = sinAngle * cardW * 0.35;
+
+        // Fake 3D: skew based on rotation
+        const skewFactor = sinAngle * 0.15;
+
+        // Edge thickness visible when card is angled
+        const edgeVisible = Math.abs(sinAngle) > 0.3;
+
+        ctx5.save();
+        ctx5.translate(cx + offsetX, y);
+        ctx5.transform(1, skewFactor, 0, 1, 0, 0);
+
+        // Shadow (deeper for lower cards)
+        ctx5.shadowColor = `rgba(0, 0, 0, ${0.06 + (1 - i/STACK_COUNT) * 0.08})`;
+        ctx5.shadowBlur = 8;
+        ctx5.shadowOffsetY = 3;
+
+        // Card edge (visible thickness)
+        if (edgeVisible) {
+          const edgeH = 4;
+          const darker = i / STACK_COUNT;
+          const er = Math.round(180 - darker * 80);
+          const eg = Math.round(80 + darker * 20);
+          const eb = Math.round(40 + darker * 140);
+          ctx5.fillStyle = `rgb(${er}, ${eg}, ${eb})`;
+          drawRoundRect(ctx5, -perspW/2, 0, perspW, edgeH, 2);
+          ctx5.fill();
+        }
+
+        // Card face
+        ctx5.shadowColor = 'transparent';
+        drawRoundRect(ctx5, -perspW/2, -cardH, perspW, cardH, radius);
+        ctx5.fillStyle = cardGradient(ctx5, i, STACK_COUNT, perspW, cardH);
+        ctx5.fill();
+
+        // Subtle highlight on top edge
+        ctx5.strokeStyle = `rgba(255, 255, 255, ${0.1 + Math.abs(cosAngle) * 0.15})`;
+        ctx5.lineWidth = 0.5;
+        ctx5.beginPath();
+        ctx5.moveTo(-perspW/2 + radius, -cardH);
+        ctx5.lineTo(perspW/2 - radius, -cardH);
+        ctx5.stroke();
+
+        ctx5.restore();
+      }
+    }
+
+    // ============ #6: Bauhaus Blocks ============
+    const ctx6 = document.getElementById('canvas6').getContext('2d');
+    const B6 = 360;
+
+    // Bauhaus palette: bold primaries + black + cream
+    const bauColors = [
+      '#E53935', // red
+      '#1E88E5', // blue
+      '#FDD835', // yellow
+      '#212121', // black
+      '#F5F0E8', // cream
+      '#FF6F00', // deep orange
+      '#43A047', // green
+    ];
+
+    // Block definitions: shape, color, target position, size
+    const blocks = [
+      { type: 'rect',   color: 0, tx: 90,  ty: 260, w: 120, h: 35 },
+      { type: 'rect',   color: 3, tx: 130, ty: 222, w: 80,  h: 35 },
+      { type: 'rect',   color: 1, tx: 100, ty: 184, w: 100, h: 35 },
+      { type: 'circle', color: 2, tx: 180, ty: 148, r: 28 },
+      { type: 'rect',   color: 5, tx: 110, ty: 110, w: 60,  h: 30 },
+      { type: 'tri',    color: 0, tx: 160, ty: 70,  s: 40 },
+      { type: 'rect',   color: 4, tx: 140, ty: 40,  w: 45,  h: 25 },
+    ];
+
+    const BLOCK_COUNT = blocks.length;
+    const stackCycle = 4.5; // full cycle duration
+    const dropDuration = 0.35;
+    const staggerDelay = 0.4;
+    const holdTime = 1.0;
+
+    function easeOutBounceLight(x) {
+      if (x < 0.7) {
+        return (1 / 0.49) * x * x;
+      } else if (x < 0.9) {
+        const t = x - 0.8;
+        return 1 - 0.15 * (1 - (t / 0.1) * (t / 0.1));
+      }
+      return 1;
+    }
+
+    function anim6(t) {
+      ctx6.clearRect(0, 0, B6, B6);
+
+      const cycle = t % stackCycle;
+      const totalDropTime = (BLOCK_COUNT - 1) * staggerDelay + dropDuration;
+      const collapseStart = totalDropTime + holdTime;
+
+      for (let i = 0; i < BLOCK_COUNT; i++) {
+        const b = blocks[i];
+        const dropStart = i * staggerDelay;
+
+        let x = b.tx, y, opacity = 1, scaleX = 1, scaleY = 1;
+
+        if (cycle < dropStart) {
+          // Not yet appeared
+          continue;
+        } else if (cycle < dropStart + dropDuration) {
+          // Dropping in from top
+          const p = (cycle - dropStart) / dropDuration;
+          const ease = easeOutBounceLight(p);
+          y = -40 + (b.ty + 40) * ease;
+          opacity = Math.min(1, p * 3);
+          // Slight squash on landing
+          if (p > 0.65) {
+            const squash = (p - 0.65) / 0.35;
+            scaleY = 1 - Math.sin(squash * Math.PI) * 0.12;
+            scaleX = 1 + Math.sin(squash * Math.PI) * 0.08;
+          }
+        } else if (cycle < collapseStart) {
+          // Settled
+          y = b.ty;
+          // Tiny idle wobble
+          y += Math.sin(t * 2 + i * 1.3) * 0.8;
+        } else if (cycle < collapseStart + 0.6) {
+          // Collapse: slide out in different directions
+          const p = (cycle - collapseStart) / 0.6;
+          const ease = p * p;
+          y = b.ty;
+          const dir = (i % 2 === 0) ? -1 : 1;
+          x = b.tx + dir * ease * 400;
+          opacity = 1 - ease;
+        } else {
+          continue;
+        }
+
+        ctx6.save();
+        ctx6.globalAlpha = opacity;
+
+        if (b.type === 'rect') {
+          ctx6.translate(x + b.w / 2, y + b.h / 2);
+          ctx6.scale(scaleX, scaleY);
+          ctx6.fillStyle = bauColors[b.color];
+          ctx6.fillRect(-b.w / 2, -b.h / 2, b.w, b.h);
+        } else if (b.type === 'circle') {
+          ctx6.translate(x, y);
+          ctx6.scale(scaleX, scaleY);
+          ctx6.fillStyle = bauColors[b.color];
+          ctx6.beginPath();
+          ctx6.arc(0, 0, b.r, 0, Math.PI * 2);
+          ctx6.fill();
+        } else if (b.type === 'tri') {
+          ctx6.translate(x, y);
+          ctx6.scale(scaleX, scaleY);
+          ctx6.fillStyle = bauColors[b.color];
+          ctx6.beginPath();
+          ctx6.moveTo(0, -b.s);
+          ctx6.lineTo(-b.s * 0.9, b.s * 0.5);
+          ctx6.lineTo(b.s * 0.9, b.s * 0.5);
+          ctx6.closePath();
+          ctx6.fill();
+        }
+
+        ctx6.restore();
+      }
+
+      // Decorative thin lines (Kandinsky style) — appear after stack is built
+      const linesStart = totalDropTime + 0.2;
+      if (cycle > linesStart && cycle < collapseStart) {
+        const lAlpha = Math.min(0.3, (cycle - linesStart) * 0.5);
+        ctx6.strokeStyle = `rgba(33, 33, 33, ${lAlpha})`;
+        ctx6.lineWidth = 1;
+        // Diagonal line
+        ctx6.beginPath(); ctx6.moveTo(60, 290); ctx6.lineTo(280, 30); ctx6.stroke();
+        // Horizontal line
+        ctx6.beginPath(); ctx6.moveTo(50, 180); ctx6.lineTo(310, 180); ctx6.stroke();
+        // Small circle accent
+        ctx6.strokeStyle = `rgba(229, 57, 53, ${lAlpha})`;
+        ctx6.beginPath(); ctx6.arc(260, 240, 15, 0, Math.PI * 2); ctx6.stroke();
+      }
+    }
+
+    // ============ Main Loop ============
     function animate(timestamp) {
       if (!startTime) startTime = timestamp;
-      const elapsed = (timestamp - startTime) / 1000;
+      const t = (timestamp - startTime) / 1000;
 
-      blobs.forEach((blob, i) => {
-        const config = blobConfigs[i];
-        const angle = config.baseAngle + elapsed * baseSpeed * config.speedMultiplier;
-
-        // Primary orbit
-        let x = center.x + Math.cos(angle) * config.orbitRadius;
-        let y = center.y + Math.sin(angle) * config.orbitRadius;
-
-        // Secondary wobble for organic merging motion
-        x += Math.cos(elapsed * config.wobbleSpeed + i) * config.wobbleAmp;
-        y += Math.sin(elapsed * config.wobbleSpeed * 1.3 + i) * config.wobbleAmp;
-
-        // Pulse the radius slightly
-        const r = 18 + Math.sin(elapsed * 2 + i * 1.5) * 3;
-
-        blob.setAttribute('cx', x);
-        blob.setAttribute('cy', y);
-        blob.setAttribute('r', r);
-      });
+      anim1(t);  // Pixel Infinity
+      anim2(t);  // HUD Display
+      anim3(t);  // Breathing Cluster
+      anim4(t);  // DNA Helix
+      anim5(t);  // Card Stack
+      anim6(t);  // Bauhaus Blocks
 
       requestAnimationFrame(animate);
     }
